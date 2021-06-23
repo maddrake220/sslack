@@ -2,8 +2,13 @@ import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from './styles';
 import useInput from '@hooks/useInput';
+import { Link, Redirect } from 'react-router-dom';
+import useSWR from 'swr';
+import fetcher from '@utils/fetcher';
 
 const SignUp = () => {
+  const { data, error } = useSWR('http://localhost:3095/api/users', fetcher);
+
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
   const [password, setPassword] = useState('');
@@ -56,6 +61,15 @@ const SignUp = () => {
     },
     [password],
   );
+
+  if (data === undefined) {
+    return <div>로딩 중...</div>;
+  }
+  if (data) {
+    console.log(data);
+    return <Redirect to="/workspace/channel" />;
+  }
+
   return (
     <div id="container">
       <Header>SSlack</Header>
@@ -98,7 +112,7 @@ const SignUp = () => {
       </Form>
       <LinkContainer>
         이미 회원이신가요?&nbsp;
-        <a href="/Login">로그인 하러 가기</a>
+        <Link to="/Login">로그인 하러 가기</Link>
       </LinkContainer>
     </div>
   );

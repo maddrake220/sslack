@@ -90,10 +90,10 @@ const config: Configuration = {
       // 프론트에서 해결방법은 proxy를 이용하여 백엔드 주소인것으로 api 요청할 수 있다.
       // api로 시작하는 요청은 3095로 보내라는 뜻
       // backend 와 frontend 모두 localhost일때 가능한 설정
-      '/api/': {
+      /* '/api/': {
         target: 'http://localhost:3095',
         changeOrigin: true,
-      },
+      }, */
     },
   },
 };
