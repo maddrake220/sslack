@@ -47,7 +47,10 @@ const config: Configuration = {
           ],
           env: {
             development: {
-              plugins: [require.resolve('react-refresh/babel')],
+              plugins: [['@emotion', { sourceMap: true }], require.resolve('react-refresh/babel')],
+            },
+            production: {
+              plugins: ['@emotion'],
             },
           },
         },
@@ -76,9 +79,22 @@ const config: Configuration = {
     publicPath: '/dist/',
   },
   devServer: {
-    historyApiFallback: true, // react router할때 필요한 설정
+    historyApiFallback: true, // react router할때 필요한 설정 : SinglePAgeApplication 은 원래 index.html만 가지고 있다. 하지만 이 설정을 통해
+    // historyApi 를 통해 fake주소 를 가질 수 있게 된다.
+    // 새로고침 하면 주소는 서버로 간다 -> 서버는 오로지 ex) localhost:3090 만 알고 있다.
+    // historyApiFallback: true를 통해 devServer가 가짜 주소를 실제 있는 주소로 인식되게끔 해줌.
     port: 3090,
     publicPath: '/dist/',
+    proxy: {
+      // 주소가 다르면 백엔드로 API 요청이 되지 않는다.
+      // 프론트에서 해결방법은 proxy를 이용하여 백엔드 주소인것으로 api 요청할 수 있다.
+      // api로 시작하는 요청은 3095로 보내라는 뜻
+      // backend 와 frontend 모두 localhost일때 가능한 설정
+      '/api/': {
+        target: 'http://localhost:3095',
+        changeOrigin: true,
+      },
+    },
   },
 };
 
