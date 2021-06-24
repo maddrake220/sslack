@@ -8,3 +8,5 @@ const fetcher = (url: string) =>
     .then((response) => response.data);
 
 export default fetcher;
+
+// fetcher를 여러개 만들어서 전역데이터 관리

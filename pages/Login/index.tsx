@@ -9,10 +9,10 @@ import fetcher from '@utils/fetcher';
 const Login = () => {
   // graphql을 사용하면 useSWR사용하지말고 apollo 사용하면 된다.
   // SWR vs react Query 비슷한 개념
-  const { data, error, revalidate } = useSWR('http://localhost:3095/api/users', fetcher, {
+  const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
     dedupingInterval: 100000, // 주기적으로 호출은 되지만 deduplingInterval 기간 내에는 캐시에서 불러옴.
+    // 즉, component가 100개든 1000개든 이 기간동안에는 서버에서 호출하지 않고 cache에서 가져옴
   }); // useSWR -> 주소를 fetcher로 넘겨주는 역활
-  // revalidate -> swr 호출 컨트롤
   const [email, onChangeEmail] = useInput('');
   const [password, setPassword] = useState('');
   const [LoginError, setLoginError] = useState('');
@@ -36,8 +36,19 @@ const Login = () => {
           },
         )
         .then((response) => {
-          revalidate();
-          console.log(response);
+          // revalidate(); // revalidate -> 서버 재호출
+          mutate(response.data); // mutate -> 서버에 요청하지않고 데이터 수정
+          //2번째 인자 shouldRevelidate check
+          // OPTIMISTIC UI : 낙관적 UI
+          // 내가 보낸 요청이 성공할거라는 낙관적인 UI 개념으로서
+          // 예를들어, 인스타그램 좋아요 누를 때 0.1초만에 바로바로 변경되는데
+          // 일단 변경하고 shouldRevelidate로 나중에 데이터베이스랑 비교하는 것들 처럼
+          // 이러한 경우에 사용할 때 좋다
+          // <--> 반대 개념 : Pessimistic UI
+          // 일반적으로 사용되는 UI로
+          // 일단 DB에서 비교한 후 UI로 표시하는 개념
+
+          // 기본적으로는 Pessimistic 이고 서버 검사를 아예 하고싶지 않으면 false, Optimistic UI 하고싶으면 True
           setLoginSuccess(true);
         })
         .catch((error) => {
