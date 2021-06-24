@@ -1,4 +1,4 @@
-import React, { useState, FC, useCallback } from 'react';
+import React, { useState, VFC, useCallback } from 'react';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import { Button, Input, Label } from '@pages/Signup/styles';
@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import useSWR, { mutate } from 'swr';
 import gravatar from 'gravatar';
 import loadable from '@loadable/component';
-
+import { toast } from 'react-toastify';
 import {
   AddButton,
   Channels,
@@ -26,14 +26,14 @@ import {
 } from '@layouts/Workspace/styles';
 import Menu from '@components/Menu';
 import Modal from '@components/Modal';
-
+import CreateChannelModal from '@components/CreateChannelModal';
 import { IUser } from '@typings/db';
 import useInput from '@hooks/useInput';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
-const Workspace: FC = ({ children }) => {
+const Workspace: VFC = () => {
   const {
     data: userData,
     error,
@@ -44,8 +44,11 @@ const Workspace: FC = ({ children }) => {
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newWorkspaceUrl, onChangeNewWorkspaceUrl, setNewWorkspaceUrl] = useInput('');
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   // const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users?123', fetcher2);
   // 쿼리 ? # 등 뒤에 붙여서 서버는 같은 요청으로 인식하지만 실제로는 다른 fetcher 요청 보낼 수 있다.
+
   const onLogout = useCallback(() => {
     axios
       .post('http://localhost:3095/api/users/logout', null, {
@@ -66,12 +69,48 @@ const Workspace: FC = ({ children }) => {
     setShowCreateWorkspaceModal(true);
   }, []);
 
-  const onCreateWorkspace = useCallback((e) => {
-    e.preventDefault();
-  }, []);
+  const onCreateWorkspace = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!newWorkspace || !newWorkspace.trim()) return;
+      if (!newWorkspaceUrl || !newWorkspaceUrl.trim()) return;
+      //  !newWorkspace.trim() trim 하지 않으면 띄어쓰기만 넣어도 form된다.
+      axios
+        .post(
+          'http://localhost:3095/api/workspaces',
+          {
+            workspace: newWorkspace,
+            url: newWorkspaceUrl,
+          },
+          {
+            withCredentials: true,
+          },
+        )
+        .then(() => {
+          revalidate();
+          setShowCreateWorkspaceModal(false);
+          setNewWorkspace('');
+          setNewWorkspaceUrl('');
+        })
+        .catch((error) => {
+          console.dir(error);
+          toast.error(error.response?.data, { position: 'bottom-center' });
+        });
+    },
+    [newWorkspace, newWorkspaceUrl],
+  );
 
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
+  }, []);
+
+  const toggleWorkspaceModal = useCallback(() => {
+    setShowWorkspaceModal((prev) => !prev);
+  }, []);
+
+  const onClickAddChannel = useCallback((e) => {
+    setShowCreateChannelModal(true);
   }, []);
 
   if (!userData) {
@@ -111,8 +150,16 @@ const Workspace: FC = ({ children }) => {
           <AddButton onClick={onClickCreateWorksapce}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>Slack</WorkspaceName>
-          <MenuScroll>MenuScroll</MenuScroll>
+          <WorkspaceName onClick={toggleWorkspaceModal}>SSlack</WorkspaceName>
+          <MenuScroll>
+            <Menu show={showWorkspaceModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
+              <WorkspaceModal>
+                <h2>SSlack</h2>
+                <button onClick={onClickAddChannel}>채널만들기</button>
+                <button onClick={onLogout}>로그아웃</button>
+              </WorkspaceModal>
+            </Menu>
+          </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
@@ -134,6 +181,11 @@ const Workspace: FC = ({ children }) => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
+      <CreateChannelModal
+        show={showCreateChannelModal}
+        onCloseModal={onCloseModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+      />
     </div>
   );
 };
