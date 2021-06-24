@@ -2,6 +2,8 @@ import React, { useCallback, VFC, SetStateAction } from 'react';
 import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/Signup/styles';
 import useInput from '@hooks/useInput';
+import axios from 'axios';
+import { useParams } from 'react-router';
 
 interface Props {
   show: boolean;
@@ -12,10 +14,21 @@ interface Props {
 const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChannelModal }) => {
   console.log(show);
   const [newChannel, onChangeNewChannel] = useInput('');
+  const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
   const onCreateChannel = useCallback(() => {
-    {
-    }
-  }, []);
+    axios
+      .post(
+        `/api/workspaces/${workspace}/channels`,
+        {
+          name: newChannel,
+        },
+        {
+          withCredentials: true,
+        },
+      )
+      .then(() => {})
+      .catch((error) => {});
+  }, [newChannel]);
   return (
     <Modal show={show} onCloseModal={onCloseModal}>
       <form onSubmit={onCreateChannel}>

@@ -70,7 +70,7 @@ const Login = () => {
 
   if (data) {
     console.log(data);
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/workspace/sslack/channel/일반" />;
   }
   return (
     <div id="container">
