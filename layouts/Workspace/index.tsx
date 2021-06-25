@@ -1,4 +1,4 @@
-import React, { useState, VFC, useCallback } from 'react';
+import React, { useState, VFC, useCallback, useEffect } from 'react';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import { Button, Input, Label } from '@pages/Signup/styles';
@@ -33,23 +33,12 @@ import { IUser, IChannel } from '@typings/db';
 import useInput from '@hooks/useInput';
 import ChannelList from '@components/ChannelList';
 import DMList from '@components/DMList';
+import useSocket from '@hooks/useSocket';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
 
 const Workspace: VFC = () => {
-  const { workspace } = useParams<{ workspace: string }>();
-
-  const {
-    data: userData,
-    error,
-    revalidate,
-    mutate,
-  } = useSWR<IUser | false>('/api/users', fetcher, {
-    dedupingInterval: 2000, // 2초
-  });
-  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
-
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
@@ -59,8 +48,39 @@ const Workspace: VFC = () => {
   const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
   const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
 
+  const { workspace } = useParams<{ workspace: string }>();
+  const {
+    data: userData,
+    error,
+    revalidate,
+    mutate,
+  } = useSWR<IUser | false>('/api/users', fetcher, {
+    dedupingInterval: 2000, // 2초
+  });
+  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
   // const { data, error, revalidate, mutate } = useSWR('/api/users?123', fetcher2);
   // 쿼리 ? # 등 뒤에 붙여서 서버는 같은 요청으로 인식하지만 실제로는 다른 fetcher 요청 보낼 수 있다.
+  const [socket, disconnect] = useSocket(workspace);
+  useEffect(() => {
+    if (channelData && userData && socket) {
+      console.log('Socket', socket);
+      // socket 객체의 receiveBuffer 서버에서 클라이언트로 데이터가 와야 하는데 그렇지 못한 버퍼들이 남아있다.
+      // receiveBuffer 는 거의 항상 비어있어야 한다.
+      // sendBuffer : 데이터를 서버에 보내야 하는데 그렇지 못한 상황의 데이터가 버퍼로 남아있다.
+      socket.emit('login', {
+        id: userData,
+        channels: channelData.map((v) => v.id),
+      });
+    }
+  }, [channelData, userData, socket]);
+  // 내가 로그인한 것을 서버에 알려주는 부분
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [workspace, disconnect]);
+  // workspace가 바뀌면 socket disconnect !
 
   const onLogout = useCallback(() => {
     axios

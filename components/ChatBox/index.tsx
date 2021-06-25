@@ -15,13 +15,15 @@ interface Props {
   placeholder?: string;
 }
 
-const ChatBox: VFC<Props> = ({ chat, onSubmitForm, onChangeChat, placeholder }) => {
+const ChatBox: VFC<Props> = ({ chat, onChangeChat, onSubmitForm, placeholder }) => {
   const { data: userData } = useSWR<IUser>(`/api/users`);
   const { workspace } = useParams<{ workspace: string }>();
   const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
 
   const onKeydownChat = useCallback(
     (e) => {
+      console.log('CHAT:', chat);
+      console.log(e.key);
       if (e.key === 'Enter') {
         if (!e.shiftKey) {
           e.preventDefault();

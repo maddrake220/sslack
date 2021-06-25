@@ -6,6 +6,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import useSWR from 'swr';
+import useSocket from '@hooks/useSocket';
 
 const DMList: FC = () => {
   const { workspace } = useParams<{ workspace?: string }>();
@@ -24,6 +25,7 @@ const DMList: FC = () => {
   //const [socket] = useSocket(workspace);
   const [channelCollapse, setChannelCollapse] = useState(false);
   const [onlineList, setOnlineList] = useState<number[]>([]);
+  const [socket, disconnect] = useSocket(workspace);
 
   const toggleChannelCollapse = useCallback(() => {
     setChannelCollapse((prev) => !prev);
@@ -33,7 +35,7 @@ const DMList: FC = () => {
     console.log('DMList: workspace 바꼈다', workspace);
     setOnlineList([]);
   }, [workspace]);
-  /* 
+
   useEffect(() => {
     socket?.on('onlineList', (data: number[]) => {
       setOnlineList(data);
@@ -46,7 +48,7 @@ const DMList: FC = () => {
       socket?.off('onlineList');
     };
   }, [socket]);
- */
+
   return (
     <>
       <h2>
