@@ -67,7 +67,7 @@ const SignUp = () => {
   }
   if (data) {
     console.log(data);
-    return <Redirect to="/workspace/sslack/channel/일반" />;
+    return <Redirect to="/workspace/sleact/channel/일반" />;
   }
 
   return (

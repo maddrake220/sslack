@@ -4,6 +4,10 @@ import { Button, Input, Label } from '@pages/Signup/styles';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
 import { useParams } from 'react-router';
+import { toast } from 'react-toastify';
+import useSWR from 'swr';
+import { IChannel, IUser } from '@typings/db';
+import fetcher from '@utils/fetcher';
 
 interface Props {
   show: boolean;
@@ -13,22 +17,45 @@ interface Props {
 
 const CreateChannelModal: VFC<Props> = ({ show, onCloseModal, setShowCreateChannelModal }) => {
   console.log(show);
-  const [newChannel, onChangeNewChannel] = useInput('');
+  const [newChannel, onChangeNewChannel, setNewChannel] = useInput('');
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
-  const onCreateChannel = useCallback(() => {
-    axios
-      .post(
-        `/api/workspaces/${workspace}/channels`,
-        {
-          name: newChannel,
-        },
-        {
-          withCredentials: true,
-        },
-      )
-      .then(() => {})
-      .catch((error) => {});
-  }, [newChannel]);
+  const {
+    data: userData,
+    error,
+    revalidate,
+    mutate,
+  } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher, {
+    dedupingInterval: 2000,
+  });
+  const { data: channelData, revalidate: revalidateChannel } = useSWR<IChannel[]>(
+    userData ? `http://localhost:3095/api/workspaces/${workspace}/channels` : null,
+    fetcher,
+  );
+  const onCreateChannel = useCallback(
+    (e) => {
+      e.preventDefault();
+      axios
+        .post(
+          `http://localhost:3095/api/workspaces/${workspace}/channels`,
+          {
+            name: newChannel,
+          },
+          {
+            withCredentials: true,
+          },
+        )
+        .then(() => {
+          setShowCreateChannelModal(false);
+          revalidateChannel();
+          setNewChannel('');
+        })
+        .catch((error) => {
+          console.dir(error);
+          toast.error(error.response.data, { position: 'bottom-center' });
+        });
+    },
+    [newChannel],
+  );
   return (
     <Modal show={show} onCloseModal={onCloseModal}>
       <form onSubmit={onCreateChannel}>
