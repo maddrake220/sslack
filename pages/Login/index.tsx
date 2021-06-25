@@ -9,7 +9,7 @@ import fetcher from '@utils/fetcher';
 const Login = () => {
   // graphql을 사용하면 useSWR사용하지말고 apollo 사용하면 된다.
   // SWR vs react Query 비슷한 개념
-  const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
+  const { data, error, revalidate, mutate } = useSWR('/api/users', fetcher, {
     dedupingInterval: 100000, // 주기적으로 호출은 되지만 deduplingInterval 기간 내에는 캐시에서 불러옴.
     // 즉, component가 100개든 1000개든 이 기간동안에는 서버에서 호출하지 않고 cache에서 가져옴
   }); // useSWR -> 주소를 fetcher로 넘겨주는 역활
@@ -26,7 +26,7 @@ const Login = () => {
       setLoginSuccess(false);
       axios
         .post(
-          'http://localhost:3095/api/users/login',
+          '/api/users/login',
           {
             email,
             password,

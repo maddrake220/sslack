@@ -17,12 +17,12 @@ interface Props {
 
 const InviteChannelModal: VFC<Props> = ({ show, onCloseModal, setShowInviteChannelModal }) => {
   const [newInviteMember, onChangeNewInviteMember, setNewInviteMember] = useInput('');
-  const { data: userData } = useSWR<IUser | false>('http://localhost:3095/api/users', fetcher, {
+  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher, {
     dedupingInterval: 2000,
   });
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
   const { revalidate: revalidateMembers } = useSWR<IChannel[]>(
-    userData && channel ? `http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members` : null,
+    userData && channel ? `/api/workspaces/${workspace}/channels/${channel}/members` : null,
     fetcher,
   );
   const onInviteSubmit = useCallback(
@@ -31,7 +31,7 @@ const InviteChannelModal: VFC<Props> = ({ show, onCloseModal, setShowInviteChann
       if (!newInviteMember || !newInviteMember.trim()) return;
 
       axios
-        .post(`http://localhost:3095/api/workspaces/${workspace}/channels/${channel}/members`, {
+        .post(`/api/workspaces/${workspace}/channels/${channel}/members`, {
           email: newInviteMember,
         })
         .then(() => {
