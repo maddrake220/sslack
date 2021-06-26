@@ -68,7 +68,7 @@ const Workspace: VFC = () => {
       // receiveBuffer 는 거의 항상 비어있어야 한다.
       // sendBuffer : 데이터를 서버에 보내야 하는데 그렇지 못한 상황의 데이터가 버퍼로 남아있다.
       socket.emit('login', {
-        id: userData,
+        id: userData.id,
         channels: channelData.map((v) => v.id),
       });
     }

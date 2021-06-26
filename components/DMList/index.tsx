@@ -38,6 +38,7 @@ const DMList: FC = () => {
 
   useEffect(() => {
     socket?.on('onlineList', (data: number[]) => {
+      console.log('DDATA: ', data);
       setOnlineList(data);
     });
     // socket?.on('dm', onMessage);
@@ -62,21 +63,14 @@ const DMList: FC = () => {
         <span>Direct Messages</span>
       </h2>
       <div>
+        {onlineList && console.log('onlineList: ', onlineList)}
         {!channelCollapse &&
           memberData?.map((member) => {
             const isOnline = onlineList.includes(member.id);
+            console.log('isOnline ? ', isOnline, 'onlineList ? ', onlineList, '  memberID: ', member.id);
             return (
               <NavLink key={member.id} activeClassName="selected" to={`/workspace/${workspace}/dm/${member.id}`}>
-                <i
-                  className={`c-icon p-channel_sidebar__presence_icon p-channel_sidebar__presence_icon--dim_enabled c-presence ${
-                    isOnline ? 'c-presence--active c-icon--presence-online' : 'c-icon--presence-offline'
-                  }`}
-                  aria-hidden="true"
-                  data-qa="presence_indicator"
-                  data-qa-presence-self="false"
-                  data-qa-presence-active="false"
-                  data-qa-presence-dnd="false"
-                />
+                <span>{isOnline ? 'O' : 'X'}</span>
                 <span>{member.nickname}</span>
                 {member.id === userData?.id && <span> (나)</span>}
               </NavLink>
