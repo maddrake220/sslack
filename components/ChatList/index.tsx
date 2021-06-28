@@ -1,22 +1,30 @@
 import { IChat, IDM } from '@typings/db';
-import React, { useRef, useCallback, VFC } from 'react';
+import React, { useRef, useCallback, VFC, forwardRef, MutableRefObject } from 'react';
 import { ChatZone, Section, StickyHeader } from './styles';
 import { Scrollbars } from 'react-custom-scrollbars';
 import Chat from '@components/Chat';
 interface Props {
   chatSections: { [key: string]: IDM[] };
+  setSize: (f: (size: number) => number) => Promise<IDM[][] | undefined>;
+  isReachingEnd: boolean;
 }
 
-const ChatList: VFC<Props> = ({ chatSections }) => {
-  const scrollbarRef = useRef(null);
+// forwardRef : 다른 컴포넌트에서 ref를 사용하고 싶을 때
+
+const ChatList = forwardRef<Scrollbars, Props>(({ chatSections, setSize, isReachingEnd }, scrollRef) => {
   const onScroll = useCallback((values) => {
-    if (values.scrollTop === 0) {
-      console.log('Top now');
+    if (values.scrollTop === 0 && !isReachingEnd) {
+      setSize((prevSize: number) => prevSize + 1).then(() => {
+        const current = (scrollRef as MutableRefObject<Scrollbars>)?.current;
+        if (current) {
+          current.scrollTop(current.getScrollHeight() - values.scrollHeight);
+        }
+      });
     }
   }, []);
   return (
     <ChatZone>
-      <Scrollbars autoHide ref={scrollbarRef} onScrollFrame={onScroll}>
+      <Scrollbars autoHide ref={scrollRef} onScrollFrame={onScroll}>
         {/* 객체를 map 할 때 entries 사용 */}
         {Object.entries(chatSections).map(([date, chats]) => {
           return (
@@ -33,6 +41,6 @@ const ChatList: VFC<Props> = ({ chatSections }) => {
       </Scrollbars>
     </ChatZone>
   );
-};
+});
 
 export default ChatList;
