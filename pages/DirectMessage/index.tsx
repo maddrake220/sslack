@@ -113,6 +113,7 @@ function DirectMessage() {
   }
 
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
+  console.log('chatDataLists == > ', chatData?.flat().reverse());
   // immutable 하게 reverse 하는 방법
   // .flat() 다차원 배열을 1차원 배열로
   return (

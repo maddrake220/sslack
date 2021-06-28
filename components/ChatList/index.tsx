@@ -4,8 +4,8 @@ import { ChatZone, Section, StickyHeader } from './styles';
 import { Scrollbars } from 'react-custom-scrollbars';
 import Chat from '@components/Chat';
 interface Props {
-  chatSections: { [key: string]: IDM[] };
-  setSize: (f: (size: number) => number) => Promise<IDM[][] | undefined>;
+  chatSections: { [key: string]: (IDM | IChat)[] };
+  setSize: (f: (size: number) => number) => Promise<IDM[][] | IChat[][] | undefined>;
   isReachingEnd: boolean;
 }
 
@@ -27,6 +27,7 @@ const ChatList = forwardRef<Scrollbars, Props>(({ chatSections, setSize, isReach
       <Scrollbars autoHide ref={scrollRef} onScrollFrame={onScroll}>
         {/* 객체를 map 할 때 entries 사용 */}
         {Object.entries(chatSections).map(([date, chats]) => {
+          console.log('chatSections ==> ', chatSections);
           return (
             <Section className={`section-${date}`} key={date}>
               <StickyHeader>

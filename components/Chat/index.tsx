@@ -8,10 +8,26 @@ import regexifyString from 'regexify-string';
 import { stringify } from 'querystring';
 
 interface Props {
-  data: IDM;
+  data: IDM | IChat;
 }
+
+function a(b: number | string | number[]) {
+  if (typeof b === 'number') {
+    b.toFixed();
+  }
+  if (typeof b === 'string') {
+    b.slice();
+  }
+  if (Array.isArray(b)) {
+    b.forEach(() => {});
+  }
+}
+// Typescript TypeGuard 예시..
+
 const Chat: VFC<Props> = ({ data }) => {
-  const user = data.Sender;
+  const user = 'Sender' in data ? data.Sender : data.User;
+  // TypeGuard -> 'Sender'가 data에 있으면 DM or Channel
+
   // const { workspace } = useParams<{ workspace: string }>();
   const result = useMemo(
     () =>
