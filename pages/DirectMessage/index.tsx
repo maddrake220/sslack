@@ -11,11 +11,13 @@ import axios from 'axios';
 import { IDM } from '@typings/db';
 import makeSection from '@utils/makeSection';
 import Scrollbars from 'react-custom-scrollbars';
+import useSocket from '@hooks/useSocket';
 function DirectMessage() {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
   const { data: userData } = useSWR(`/api/workspaces/${workspace}/users/${id}`, fetcher);
   const { data: myData } = useSWR('/api/users', fetcher);
   const [chat, onChangeChat, setChat] = useInput('');
+  const [socket] = useSocket(workspace);
   const scrollbarRef = useRef<Scrollbars>(null);
 
   const {
@@ -63,7 +65,8 @@ function DirectMessage() {
           .then(() => {
             setChat('');
           })
-          .catch(() => {
+          .catch((error) => {
+            console.dir(error);
             revalidateChat();
           });
       }
@@ -71,7 +74,34 @@ function DirectMessage() {
     [chat, chatData, myData, userData, workspace, id],
   );
   // 로딩 시 스크롤바 제일 아래로
+  const onMessage = useCallback((data: IDM) => {
+    if (data.SenderId === Number(id) && myData.id !== Number(id)) {
+      mutateChat((chatData) => {
+        chatData?.[0].unshift(data);
+        return chatData;
+      }, false).then(() => {
+        if (scrollbarRef.current) {
+          if (
+            scrollbarRef.current.getScrollHeight() <
+            scrollbarRef.current.getClientHeight() + scrollbarRef.current.getScrollHeight() + 150
+            // 150px 이상 스크롤을 올렸을 때는 남이 채팅을 쳐도 bottom으로 가지 않는다.
+          ) {
+            console.log('scrollToBottom!', scrollbarRef.current?.getValues());
+            setTimeout(() => {
+              scrollbarRef.current?.scrollToBottom();
+            }, 50);
+          }
+        }
+      });
+    }
+  }, []);
+  useEffect(() => {
+    socket?.on('dm', onMessage);
 
+    return () => {
+      socket?.on('dm', onMessage);
+    };
+  }, [socket, id, myData]);
   useEffect(() => {
     if (chatData?.length === 1) {
       scrollbarRef.current?.scrollToBottom();
