@@ -24,7 +24,7 @@ const Channel = () => {
     <Container>
       <Header>채널) 로그인하신 것을 축하드립니다.!</Header>
 
-      <ChatList />
+      {/* <ChatList /> */}
       <ChatBox chat={chat} onSubmitForm={onSubmitForm} onChangeChat={onChangeChat} />
     </Container>
   );

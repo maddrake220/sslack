@@ -7,7 +7,6 @@ import { IUser } from '@typings/db';
 import { useParams } from 'react-router';
 import fetcher from '@utils/fetcher';
 import gravatar from 'gravatar';
-
 interface Props {
   chat: string;
   onSubmitForm: (e: any) => void;
@@ -61,6 +60,7 @@ const ChatBox: VFC<Props> = ({ chat, onChangeChat, onSubmitForm, placeholder }) 
     },
     [memberData],
   );
+
   return (
     <ChatArea>
       <Form onSubmit={onSubmitForm}>

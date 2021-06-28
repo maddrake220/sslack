@@ -64,9 +64,6 @@ const Workspace: VFC = () => {
   useEffect(() => {
     if (channelData && userData && socket) {
       console.log('Socket', socket);
-      // socket 객체의 receiveBuffer 서버에서 클라이언트로 데이터가 와야 하는데 그렇지 못한 버퍼들이 남아있다.
-      // receiveBuffer 는 거의 항상 비어있어야 한다.
-      // sendBuffer : 데이터를 서버에 보내야 하는데 그렇지 못한 상황의 데이터가 버퍼로 남아있다.
       socket.emit('login', {
         id: userData.id,
         channels: channelData.map((v) => v.id),
