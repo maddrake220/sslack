@@ -149,7 +149,7 @@ const Channel = () => {
           if (e.dataTransfer.items[i].kind === 'file') {
             const file = e.dataTransfer.items[i].getAsFile();
             console.log(e, '.... file[' + i + '].name = ' + file.name);
-            formData.append('image', file);
+            formData.append('image', file); // server에 Image를 보낼때
           }
         }
       } else {

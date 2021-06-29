@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Container, Header, DragOver } from './styles';
 import gravatar from 'gravatar';
 import useSWR, { useSWRInfinite } from 'swr';
@@ -18,6 +18,7 @@ function DirectMessage() {
   const { data: myData } = useSWR('/api/users', fetcher);
   const [chat, onChangeChat, setChat] = useInput('');
   const [socket] = useSocket(workspace);
+  const [dragOver, setDragOver] = useState(false);
   const scrollbarRef = useRef<Scrollbars>(null);
 
   const {
@@ -108,6 +109,41 @@ function DirectMessage() {
     }
   }, [chatData]);
 
+  const onDrop = useCallback(
+    (e) => {
+      e.preventDefault();
+      console.log(e);
+      const formData = new FormData();
+      if (e.dataTransfer.items) {
+        // Use DataTransferItemList interface to access the file(s)
+        for (let i = 0; i < e.dataTransfer.items.length; i++) {
+          // If dropped items aren't files, reject them
+          if (e.dataTransfer.items[i].kind === 'file') {
+            const file = e.dataTransfer.items[i].getAsFile();
+            console.log(e, '.... file[' + i + '].name = ' + file.name);
+            formData.append('image', file); // server에 Image를 보낼때
+          }
+        }
+      } else {
+        // Use DataTransfer interface to access the file(s)
+        for (let i = 0; i < e.dataTransfer.files.length; i++) {
+          console.log(e, '... file[' + i + '].name = ' + e.dataTransfer.files[i].name);
+          formData.append('image', e.dataTransfer.files[i]);
+        }
+      }
+      axios.post(`/api/workspaces/${workspace}/dms/${id}/images`, formData).then(() => {
+        setDragOver(false);
+      });
+    },
+    [workspace, id],
+  );
+
+  const onDragOver = useCallback((e) => {
+    e.preventDefault();
+    console.log(e);
+    setDragOver(true);
+  }, []);
+
   if (!userData || !myData) {
     return null;
   }
@@ -117,7 +153,7 @@ function DirectMessage() {
   // immutable 하게 reverse 하는 방법
   // .flat() 다차원 배열을 1차원 배열로
   return (
-    <Container>
+    <Container onDrop={onDrop} onDragOver={onDragOver}>
       <Header>
         <img
           src={gravatar.url(userData.email, {
@@ -130,6 +166,8 @@ function DirectMessage() {
       <ChatList chatSections={chatSections} ref={scrollbarRef} setSize={setSize} isReachingEnd={isReachingEnd} />
 
       <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
+
+      {dragOver && <DragOver>업로드!</DragOver>}
     </Container>
   );
 }

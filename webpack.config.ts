@@ -3,17 +3,24 @@ import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import webpack, { Configuration as WebpackCofiguration } from 'webpack';
 import { Configuration as WebpackDevServerConfiguration } from 'webpack-dev-server';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
-
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+// webpack-bundle-analyzer: Webpack Bundling 할 때 용량문제 해결할 때 효과적
 interface Configuration extends WebpackCofiguration {
   devServer?: WebpackDevServerConfiguration;
 }
 
+/* 
+ bundling 파일 용량 줄이는 법
+
+ 1. code splitting
+ 2. tree Shaking
+*/
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const config: Configuration = {
   name: 'sslack',
   mode: isDevelopment ? 'development' : 'production',
-  devtool: isDevelopment ? 'hidden-source-map' : 'inline-source-map', //
+  devtool: !isDevelopment ? 'hidden-source-map' : 'eval', //
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'], // 바벨이 처리할 확장자 목록
     alias: {
@@ -99,10 +106,15 @@ const config: Configuration = {
 };
 
 if (isDevelopment && config.plugins) {
+  // 개발 모드 plugins
   config.plugins.push(new webpack.HotModuleReplacementPlugin());
   config.plugins.push(new ReactRefreshWebpackPlugin());
+  config.plugins.push(new BundleAnalyzerPlugin({ analyzerMode: 'server', openAnalyzer: true })); // bundle결과물을 서버쪽에 따로 띄어줌
 }
 if (!isDevelopment && config.plugins) {
+  // 배포 모드 plugins
+  config.plugins.push(new webpack.LoaderOptionsPlugin({ minimize: true })); // 최적화용
+  config.plugins.push(new BundleAnalyzerPlugin({ analyzerMode: 'static' })); // bundle 결과물을 html로 출력
 }
 
 export default config;

@@ -7,6 +7,8 @@ import { Link, useParams } from 'react-router-dom';
 import regexifyString from 'regexify-string';
 import { stringify } from 'querystring';
 
+const BACK_URL = process.env.NODE_ENV == 'development' ? 'http://localhost:3095' : 'https://sleact.nodebird';
+
 interface Props {
   data: IDM | IChat;
 }
@@ -31,35 +33,39 @@ const Chat: VFC<Props> = ({ data }) => {
   // const { workspace } = useParams<{ workspace: string }>();
   const result = useMemo(
     () =>
-      regexifyString({
-        input: data.content,
-        pattern: /@\[(.+?)\]\((\d+?)\)|[\n]/g,
-        //   -> g (모두 찾는것)  -> (하나만),
-        // . -> 모든 글자 한개 이상
-        // \d -> 숫자
-        // + -> 하나 이상
-        // ? -> 0개나 1개
-        // * -> 0개 이상
-        // | -> 또는
-        // \n -> 줄바꿈
+      data.content.startsWith('uploads\\') ? (
+        <img src={`${BACK_URL}/${data.content}`} style={{ maxHeight: 200 }} />
+      ) : (
+        regexifyString({
+          input: data.content,
+          pattern: /@\[(.+?)\]\((\d+?)\)|[\n]/g,
+          //   -> g (모두 찾는것)  -> (하나만),
+          // . -> 모든 글자 한개 이상
+          // \d -> 숫자
+          // + -> 하나 이상
+          // ? -> 0개나 1개
+          // * -> 0개 이상
+          // | -> 또는
+          // \n -> 줄바꿈
 
-        // EX ))
-        // @[userName](4)
-        // + 만 있으면 [userName] 최대한 많이
-        // +? 는 최대한 조금
-        decorator(match, index) {
-          const arr = match.match(/@\[(.+?)\]\((\d+?)\)/)!;
-          console.log(arr);
-          if (arr) {
-            return (
-              <Link key={match + index} to={`${arr[2]}`}>
-                @{arr[1]}
-              </Link>
-            );
-          }
-          return <br key={index} />;
-        },
-      }),
+          // EX ))
+          // @[userName](4)
+          // + 만 있으면 [userName] 최대한 많이
+          // +? 는 최대한 조금
+          decorator(match, index) {
+            const arr = match.match(/@\[(.+?)\]\((\d+?)\)/)!;
+            console.log(arr);
+            if (arr) {
+              return (
+                <Link key={match + index} to={`${arr[2]}`}>
+                  @{arr[1]}
+                </Link>
+              );
+            }
+            return <br key={index} />;
+          },
+        })
+      ),
     [data.content],
   );
   return (
