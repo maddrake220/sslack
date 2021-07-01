@@ -7,6 +7,7 @@ import { useParams } from 'react-router';
 import { NavLink } from 'react-router-dom';
 import useSWR from 'swr';
 import useSocket from '@hooks/useSocket';
+import EachDM from '@components/EachDM';
 
 const DMList: FC = () => {
   const { workspace } = useParams<{ workspace?: string }>();
@@ -66,15 +67,7 @@ const DMList: FC = () => {
         {onlineList && console.log('onlineList: ', onlineList)}
         {!channelCollapse &&
           memberData?.map((member) => {
-            const isOnline = onlineList.includes(member.id);
-            // console.log('isOnline ? ', isOnline, 'onlineList ? ', onlineList, '  memberID: ', member.id);
-            return (
-              <NavLink key={member.id} activeClassName="selected" to={`/workspace/${workspace}/dm/${member.id}`}>
-                <span>{isOnline ? 'O' : 'X'}</span>
-                <span>{member.nickname}</span>
-                {member.id === userData?.id && <span> (나)</span>}
-              </NavLink>
-            );
+            return <EachDM member={member} onlineList={onlineList} />;
           })}
       </div>
     </>

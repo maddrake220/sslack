@@ -56,6 +56,8 @@ function DirectMessage() {
         }, false) // optimistic UI 할때는 shouldRevalidate 가 false 여야 한다.
           .then(() => {
             setChat('');
+            localStorage.setItem(`${workspace}-${id}`, new Date().getTime().toString());
+
             scrollbarRef.current?.scrollToBottom(); // 채팅시 스크롤바 아래로
           });
         // optimistic UI
@@ -96,6 +98,10 @@ function DirectMessage() {
       });
     }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(`${workspace}-${id}`, new Date().getTime().toString());
+  }, [workspace, id]);
   useEffect(() => {
     socket?.on('dm', onMessage);
 
@@ -131,7 +137,10 @@ function DirectMessage() {
           formData.append('image', e.dataTransfer.files[i]);
         }
       }
+
       axios.post(`/api/workspaces/${workspace}/dms/${id}/images`, formData).then(() => {
+        localStorage.setItem(`${workspace}-${id}`, new Date().getTime().toString());
+
         setDragOver(false);
       });
     },
