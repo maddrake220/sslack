@@ -27,7 +27,6 @@ const ChatList = forwardRef<Scrollbars, Props>(({ chatSections, setSize, isReach
       <Scrollbars autoHide ref={scrollRef} onScrollFrame={onScroll}>
         {/* 객체를 map 할 때 entries 사용 */}
         {Object.entries(chatSections).map(([date, chats]) => {
-          console.log('chatSections ==> ', chatSections);
           return (
             <Section className={`section-${date}`} key={date}>
               <StickyHeader>

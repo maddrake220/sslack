@@ -67,7 +67,7 @@ const DMList: FC = () => {
         {!channelCollapse &&
           memberData?.map((member) => {
             const isOnline = onlineList.includes(member.id);
-            console.log('isOnline ? ', isOnline, 'onlineList ? ', onlineList, '  memberID: ', member.id);
+            // console.log('isOnline ? ', isOnline, 'onlineList ? ', onlineList, '  memberID: ', member.id);
             return (
               <NavLink key={member.id} activeClassName="selected" to={`/workspace/${workspace}/dm/${member.id}`}>
                 <span>{isOnline ? 'O' : 'X'}</span>
